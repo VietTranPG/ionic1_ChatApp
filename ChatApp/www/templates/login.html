@@ -1,0 +1,12 @@
+<ion-view ng-controller="LoginController as vm">
+	<ion-header-bar class="bar-assertive">
+	    <h1  class="title">Welcome to ChatApp</h1>    
+          <input type="text" ng-change="change()" placeholder="Enter your nickname" ng-model="username" name="username">   
+	</ion-header-bar>            
+      <ion-content>
+                  <div class="item item-input">                       
+                        <input type="text" ng-change="change()" placeholder="Enter your nickname" ng-model="username" name="username">   
+                        <button class="button button-small button-assertive icon icon-right ion-log-in" ng-click="join(username)">Login</button>
+                  </div>
+      </ion-content>
+</ion-view>
