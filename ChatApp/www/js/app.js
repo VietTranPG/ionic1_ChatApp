@@ -3,7 +3,7 @@
 // angular.module is a global place for creating, registering and retrieving Angular modules
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
-angular.module('starter', ['ionic'])
+angular.module('starter', ['ionic','btford.socket-io'])
 
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {
@@ -29,18 +29,33 @@ angular.module('starter', ['ionic'])
       templateUrl:'templates/login.html'
     })
     .state('chat',{
-      url: '/chat/:username',
+      url: '/chat/:username/:avartar',
       templateUrl:'templates/chat.html'
     });
     $urlRouterProvider.otherwise('login');
 })
+.factory('mySocket', function (socketFactory) {
+  var myIoSocket = io.connect('localhost:3000');
+
+  mySocket = socketFactory({
+    ioSocket: myIoSocket
+  });
+
+  return mySocket;
+})
 .controller('LoginController',function($scope, $state,$ionicPopup){
   var vm = this;
-  $scope.join=function(username){ 
-    if ($scope.username) {
-        $state.go('chat',{username:username});
-        
-    }
+  $scope.join=function(username,avartar){ 
+    if (username) {
+      if(avartar){
+         $scope.avartar = avartar;
+        }
+        else
+        {
+          $scope.avartar = "https://cdn1.iconfinder.com/data/icons/ninja-things-1/1772/ninja-simple-512.png";
+        }
+        $state.go('chat',{username:username,avartar:avartar});        
+      } 
     else{
         var alertPopup = $ionicPopup.alert({
            title: 'Error!',
@@ -49,9 +64,20 @@ angular.module('starter', ['ionic'])
     }
   };
 })
-
-
-
-.controller('ChatController',function($scope,$state){
+.controller('ChatController',function($scope,$state,mySocket){
+    $scope.messages=[];
     $scope.username = $state.params.username;
+    var data={message: 'user has joined',sender:$scope.username};
+    mySocket.on('connect',function(){
+       mySocket.emit("Message",data);
+    });
+    mySocket.on('Message', function(data) {
+      $scope.messages.push(data);
+    });
+    $scope.sendMessage=function(){
+        var newMessage ={sender:'',message:''};
+        newMessage.sender = $scope.username;
+        newMessage.message = $scope.message;
+        mySocket.emit("Message",newMessage);
+    }
 });
